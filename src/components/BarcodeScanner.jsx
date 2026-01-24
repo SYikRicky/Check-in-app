@@ -10,16 +10,34 @@ const videoStyles = {
   objectFit: 'cover'
 };
 
-export default function BarcodeScanner({ onResult }) {
+export default function BarcodeScanner({ onResult, active = true }) {
   const videoRef = useRef(null);
   const [message, setMessage] = useState('Allow camera and place the barcode inside the frame.');
+  const controlsRef = useRef(null);
+  const readerRef = useRef(null);
 
   useEffect(() => {
     const reader = new BrowserMultiFormatReader();
-    let controls;
-    let active = true;
+    readerRef.current = reader;
+    let live = true;
+
+    const stopCamera = () => {
+      live = false;
+      controlsRef.current?.stop?.();
+      const stream = videoRef.current?.srcObject;
+      stream?.getTracks().forEach((track) => track.stop());
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      reader.reset?.();
+    };
 
     const start = async () => {
+      if (!active) {
+        stopCamera();
+        setMessage('Scanner idle. Activate to scan.');
+        return;
+      }
       if (!navigator?.mediaDevices) {
         setMessage('Camera access is not supported on this browser.');
         return;
@@ -29,15 +47,20 @@ export default function BarcodeScanner({ onResult }) {
         if (videoRef.current) {
           videoRef.current.setAttribute('playsinline', true);
           videoRef.current.muted = true;
+          videoRef.current.autoplay = true;
         }
 
-        controls = await reader.decodeFromVideoDevice(null, videoRef.current, (result, err) => {
-          if (!active) return;
+        controlsRef.current = await reader.decodeFromVideoDevice(null, videoRef.current, (result) => {
+          if (!live) return;
           if (result) {
             onResult?.(result.getText());
+            setMessage('Captured. Stopping camera…');
+            stopCamera();
           }
         });
         setMessage('Scanning… keep the barcode steady.');
+        // Kick off play; ignore aborts caused by quick stop/start cycles.
+        videoRef.current?.play?.().catch(() => {});
       } catch (err) {
         const denied = err?.name === 'NotAllowedError';
         setMessage(denied ? 'Camera permission denied. Enable access to scan.' : 'Camera unavailable. Check permissions.');
@@ -47,20 +70,20 @@ export default function BarcodeScanner({ onResult }) {
     start();
 
     return () => {
-      active = false;
-      controls?.stop?.();
-      if (typeof reader?.reset === 'function') {
-        reader.reset();
-      }
-      const stream = videoRef.current?.srcObject;
-      stream?.getTracks().forEach((track) => track.stop());
+      stopCamera();
     };
-  }, [onResult]);
+  }, [onResult, active]);
 
   return (
     <View style={styles.wrapper}>
       <View style={styles.frame}>
-        <video ref={videoRef} style={videoStyles} />
+        <video
+          ref={videoRef}
+          style={videoStyles}
+          playsInline
+          muted
+          autoPlay
+        />
         <View style={styles.overlay}>
           <Text style={styles.overlayText}>{message}</Text>
         </View>
