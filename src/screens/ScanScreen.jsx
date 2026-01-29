@@ -29,6 +29,8 @@ export default function ScanScreen({
           placeholderTextColor="#9aa3ab"
           value={barcodeInput}
           onChangeText={setBarcodeInput}
+          keyboardType="number-pad"
+          inputMode="numeric"
         />
       </View>
       <TouchableOpacity
@@ -94,7 +96,8 @@ const styles = StyleSheet.create({
     borderColor: '#c5d3cf',
     paddingHorizontal: 12,
     backgroundColor: '#fff',
-    color: '#1d2f39'
+    color: '#1d2f39',
+    fontSize: 16 // avoid iOS zoom on focus
   },
   primaryButton: {
     backgroundColor: '#3b7a57',

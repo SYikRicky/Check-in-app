@@ -15,6 +15,7 @@ export default function BarcodeScanner({ onResult, active = true }) {
   const [message, setMessage] = useState('Allow camera and place the barcode inside the frame.');
   const controlsRef = useRef(null);
   const readerRef = useRef(null);
+  const askedRef = useRef(false);
 
   useEffect(() => {
     const reader = new BrowserMultiFormatReader();
@@ -38,6 +39,8 @@ export default function BarcodeScanner({ onResult, active = true }) {
         setMessage('Scanner idle. Activate to scan.');
         return;
       }
+      if (askedRef.current && !navigator?.mediaDevices?.getUserMedia) return;
+      if (askedRef.current && message.includes('permission denied')) return;
       if (!navigator?.mediaDevices) {
         setMessage('Camera access is not supported on this browser.');
         return;
@@ -50,6 +53,7 @@ export default function BarcodeScanner({ onResult, active = true }) {
           videoRef.current.autoplay = true;
         }
 
+        askedRef.current = true;
         controlsRef.current = await reader.decodeFromVideoDevice(null, videoRef.current, (result) => {
           if (!live) return;
           if (result) {
@@ -63,6 +67,7 @@ export default function BarcodeScanner({ onResult, active = true }) {
         videoRef.current?.play?.().catch(() => {});
       } catch (err) {
         const denied = err?.name === 'NotAllowedError';
+        if (denied) askedRef.current = true;
         setMessage(denied ? 'Camera permission denied. Enable access to scan.' : 'Camera unavailable. Check permissions.');
       }
     };
