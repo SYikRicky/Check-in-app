@@ -25,7 +25,7 @@ export default function App() {
   const [papers, setPapers] = useState(DEFAULT_PAPERS);
 
   const hero = useMemo(
-    () => ({ title: 'HKDSE Chemistry Mock', subtitle: '天道酬勤' }),
+    () => ({ title: 'Marco Wong HKDSE Chemistry Mock Examination 2026', subtitle: '天道酬勤' }),
     []
   );
 
