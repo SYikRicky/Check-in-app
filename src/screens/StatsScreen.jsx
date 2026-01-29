@@ -163,9 +163,6 @@ export default function StatsScreen({ apiBase, onBack }) {
             <Text style={[styles.meta, styles.link]} onPress={onBack}>
               返回登入
             </Text>
-            <Text style={[styles.meta, styles.link]} onPress={() => setSearch('')}>
-              回到統計
-            </Text>
           </View>
         </>
       ) : null}
