@@ -12,5 +12,16 @@ export default defineConfig({
   },
   server: {
     port: 5174
+  },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-native-web', 'axios'],
+          zxing: ['@zxing/browser', '@zxing/library']
+        }
+      }
+    }
   }
 });
