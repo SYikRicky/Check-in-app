@@ -23,6 +23,7 @@ export default function App() {
   const [checkedPapers, setCheckedPapers] = useState({});
   const [scannerActive, setScannerActive] = useState(false);
   const [papers, setPapers] = useState(DEFAULT_PAPERS);
+  const [retryToken, setRetryToken] = useState(0);
 
   const hero = useMemo(
     () => ({ title: 'Marco Wong HKDSE Chemistry Mock Examination 2026', subtitle: '天道酬勤' }),
@@ -165,12 +166,16 @@ export default function App() {
             status={status}
             loading={loading}
             scannerActive={scannerActive}
+            retryToken={retryToken}
             onDetected={(val) => {
               setScannerActive(false);
               completeCheckIn(val, { source: 'scanner' });
             }}
             onSubmitManual={() => completeCheckIn(barcodeInput, { source: 'manual' })}
-            onRestartScanner={() => setScannerActive(true)}
+            onRestartScanner={() => {
+              setRetryToken((t) => t + 1);
+              setScannerActive(true);
+            }}
             onBack={() => {
               setScannerActive(false);
               setScreen('list');

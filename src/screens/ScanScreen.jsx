@@ -9,6 +9,7 @@ export default function ScanScreen({
   status,
   loading,
   scannerActive,
+  retryToken,
   onDetected,
   onSubmitManual,
   onRestartScanner,
@@ -19,7 +20,7 @@ export default function ScanScreen({
       <Text style={styles.sectionTitle}>掃描條碼</Text>
       <Text style={styles.subtitle}>請使用鏡頭掃描條碼（應等於電話號碼 {phone}），或手動輸入。</Text>
       <View style={styles.scannerBox}>
-        <BarcodeScanner onResult={onDetected} active={scannerActive} />
+        <BarcodeScanner onResult={onDetected} active={scannerActive} retryToken={retryToken} />
       </View>
       <View style={styles.formGroup}>
         <Text style={styles.fieldLabel}>手動輸入條碼</Text>
