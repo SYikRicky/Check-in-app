@@ -39,10 +39,6 @@ export default function LoginScreen({
       {status.message ? (
         <Badge tone={status.tone} message={status.message} />
       ) : null}
-      <View style={styles.footerLinks}>
-        <Text style={styles.linkText}>Need help?</Text>
-        <Text style={styles.linkText}>Terms · Privacy</Text>
-      </View>
     </View>
   );
 }
