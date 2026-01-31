@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 4000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5174';
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/student';
 const MONGO_DB = process.env.MONGO_DB || 'student';
+let CHECKIN_ENABLED = process.env.CHECKIN_ENABLED !== 'false';
 
 // Permissive CORS for development; tighten for production as needed.
 app.use(
@@ -52,6 +53,9 @@ const Candidate = mongoose.model('Candidate', candidateSchema, '2026_Mock');
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 app.post('/api/check-ins', async (req, res) => {
+  if (!CHECKIN_ENABLED) {
+    return res.status(403).json({ message: '簽到入口已暫停，請稍後再試。' });
+  }
   const { barcode, paperId, paperTitle } = req.body || {};
   if (!barcode) {
     return res.status(400).json({ message: 'Barcode is required.' });
@@ -163,6 +167,20 @@ app.delete('/api/check-ins', async (req, res) => {
     console.error('Delete check-in failed', err);
     return res.status(500).json({ message: 'Failed to delete check-in.' });
   }
+});
+
+// Check-in toggle status
+app.get('/api/check-ins/status', (_req, res) => {
+  return res.json({ enabled: CHECKIN_ENABLED });
+});
+
+app.post('/api/check-ins/status', (req, res) => {
+  const { enabled } = req.body || {};
+  if (typeof enabled !== 'boolean') {
+    return res.status(400).json({ message: 'enabled must be boolean' });
+  }
+  CHECKIN_ENABLED = enabled;
+  return res.json({ enabled: CHECKIN_ENABLED });
 });
 
 const start = async () => {

@@ -9,12 +9,18 @@ export default function StatsScreen({ apiBase, onBack }) {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [busyDelete, setBusyDelete] = useState(false);
+  const [gate, setGate] = useState(true);
+  const [busyGate, setBusyGate] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`${apiBase}/api/check-ins`);
-        setData(res.data || []);
+        const [list, status] = await Promise.all([
+          axios.get(`${apiBase}/api/check-ins`),
+          axios.get(`${apiBase}/api/check-ins/status`)
+        ]);
+        setData(list.data || []);
+        setGate(status.data?.enabled !== false);
       } catch (e) {
         setError('無法載入統計，請稍後再試。');
       } finally {
@@ -98,6 +104,20 @@ export default function StatsScreen({ apiBase, onBack }) {
     }
   };
 
+  const toggleGate = async () => {
+    if (busyGate) return;
+    setBusyGate(true);
+    try {
+      const next = !gate;
+      const res = await axios.post(`${apiBase}/api/check-ins/status`, { enabled: next });
+      setGate(res.data?.enabled);
+    } catch (e) {
+      setError('無法切換簽到狀態，請稍後再試。');
+    } finally {
+      setBusyGate(false);
+    }
+  };
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>簽到統計</Text>
@@ -107,6 +127,12 @@ export default function StatsScreen({ apiBase, onBack }) {
         <>
           <Text style={styles.meta}>總考生：{total}</Text>
           <Text style={styles.meta}>已簽到：{checked}</Text>
+          <View style={{ marginVertical: 8 }}>
+            <Text style={styles.meta}>簽到入口：{gate ? '開啟' : '已關閉'}</Text>
+            <Text style={[styles.meta, styles.link]} onPress={toggleGate}>
+              {busyGate ? '處理中…' : gate ? '關閉入口' : '開啟入口'}
+            </Text>
+          </View>
           <Text style={[styles.meta, styles.section]}>依日期與卷別</Text>
           {grouped.map(([date, vals]) => (
             <View key={date} style={styles.row}>
