@@ -17,7 +17,7 @@ export default function LoginScreen({
       <Text style={styles.title}>歡迎登入</Text>
       <Text style={styles.subtitle}>輸入註冊電話號碼進行身份確認。</Text>
       <View style={styles.formGroup}>
-        <Text style={styles.fieldLabel}>電話號碼</Text>
+        <Text style={styles.fieldLabel}>電話號碼 (如果在28/1後報名的考生，請填寫Label的編號)</Text>
         <TextInput
           style={styles.input}
           placeholder="例如：91234567"
